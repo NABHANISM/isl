@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Islamic Content Authenticity Chat (Dark)</title>
+    <style>
+        :root {
+            --bg-color: #121212; /* Very dark background */
+            --panel-bg-color: #1e1e1e; /* Slightly lighter panel background */
+            --input-bg-color: #2a2a2a; /* Input background */
+            --border-color: #333; /* Subtle border */
+            --text-color: #e0e0e0; /* Primary light text */
+            --text-color-secondary: #aaa; /* Secondary grey text */
+            --accent-color: #00aaff; /* Light blue accent */
+            --accent-color-alt: #28a745; /* Green accent (success) */
+            --error-color: #dc3545; /* Red accent (error) */
+            --warning-color: #ffc107; /* Yellow accent (warning) */
+            --button-bg: var(--accent-color);
+            --button-hover-bg: #007bff;
+            --button-secondary-bg: #4a4a4a;
+            --button-secondary-hover-bg: #5a5a5a;
+            --border-radius: 6px;
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            line-height: 1.7;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto; /* Center content */
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            position: relative; /* Needed for settings icon */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ffffff;
+            /* border-bottom: 1px solid var(--border-color); */
+            padding-bottom: 10px;
+            margin-top: 60px; /* Space below settings icon */
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        /* Settings Icon */
+        #settingsIcon {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color-secondary);
+            transition: color 0.3s ease;
+            z-index: 10;
+        }
+        #settingsIcon:hover {
+            color: #fff;
+        }
+
+        /* Settings Panel */
+        #settingsPanel {
+            display: none;
+            background-color: var(--panel-bg-color);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        #settingsPanel h2 {
+            margin-top: 0;
+            color: #eee;
+            font-size: 18px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        #apiKeySection label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #ccc;
+        }
+        #apiKeyInput {
+            width: calc(100% - 105px);
+            padding: 12px 15px;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius) 0 0 var(--border-radius);
+            background-color: var(--input-bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            vertical-align: middle; /* Align with button */
+        }
+         #apiKeyInput:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.3);
+         }
+        #saveApiKeyButton {
+            width: 100px;
+            padding: 12px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            background-color: var(--button-bg);
+            color: white;
+            border: 1px solid var(--button-bg);
+            border-left: none;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            cursor: pointer;
+            vertical-align: middle; /* Align with input */
+            transition: background-color 0.2s ease;
+        }
+        #saveApiKeyButton:hover {
+            background-color: var(--button-hover-bg);
+            border-color: var(--button-hover-bg);
+        }
+        #apiKeyStatus {
+            font-size: 13px;
+            margin-top: 12px;
+            /* Color set dynamically by JS */
+            min-height: 1.2em;
+        }
+         .api-key-note {
+             font-size: 12px;
+             color: var(--text-color-secondary);
+             margin-top: 15px;
+             line-height: 1.5;
+         }
+         .api-key-note a {
+             color: var(--accent-color);
+             text-decoration: none;
+         }
+         .api-key-note a:hover {
+             text-decoration: underline;
+         }
+
+        /* Initial Search Section */
+         #searchSection {
+             display: flex;
+             margin-bottom: 20px; /* Reduced margin */
+         }
+        #searchInput {
+            flex-grow: 1;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius) 0 0 var(--border-radius);
+            background-color: var(--input-bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            margin-right: -1px;
+        }
+         #searchInput:focus {
+             outline: none;
+             border-color: var(--accent-color-alt);
+             box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.3);
+             z-index: 2;
+             position: relative;
+         }
+        #checkButton {
+            padding: 12px 18px;
+            font-size: 16px;
+            font-weight: 600;
+            background-color: var(--accent-color-alt);
+            color: white;
+            border: 1px solid var(--accent-color-alt);
+            border-radius: 0;
+            cursor: pointer;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            transition: background-color 0.2s ease;
+        }
+        #checkButton:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+        #checkButton:disabled {
+            background-color: var(--button-secondary-bg);
+            border-color: var(--border-color);
+            cursor: not-allowed;
+        }
+
+        #clearButton {
+            padding: 12px 18px;
+            font-size: 16px;
+            background-color: var(--button-secondary-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-left: none;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            cursor: pointer;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            transition: background-color 0.2s ease;
+        }
+        #clearButton:hover {
+            background-color: var(--button-secondary-hover-bg);
+        }
+
+        /* Chat Area */
+        #chatArea {
+            flex-grow: 1; /* Takes remaining vertical space */
+            display: flex;
+            flex-direction: column;
+            background-color: var(--panel-bg-color);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            margin-top: 10px; /* Space above chat */
+            overflow: hidden; /* Clip children */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #chatHistory {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto; /* Enable scrolling for history */
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Space between messages */
+        }
+
+        /* Individual Messages */
+        .message {
+            padding: 12px 18px;
+            border-radius: var(--border-radius);
+            max-width: 85%;
+            word-wrap: break-word; /* Prevent long words from overflowing */
+            line-height: 1.6;
+        }
+
+        .user-message {
+            background-color: var(--accent-color);
+            color: white;
+            align-self: flex-end; /* Align user messages to the right */
+            border-radius: var(--border-radius) var(--border-radius) 0 var(--border-radius);
+        }
+
+        .ai-message {
+            background-color: var(--input-bg-color); /* Slightly different background */
+            color: var(--text-color);
+            align-self: flex-start; /* Align AI messages to the left */
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius) var(--border-radius) var(--border-radius) 0;
+            width: 100%; /* Take full width for structure */
+            max-width: 100%; /* Override max-width */
+            box-sizing: border-box; /* Include padding/border in width */
+            border-left-width: 4px; /* Reserve space for indicator */
+            border-left-style: solid;
+            border-left-color: transparent; /* Default: no color */
+        }
+
+        /* AI Response Structure */
+        .ai-message .result-section {
+            padding: 10px 0 10px 18px; /* Vertical padding + left padding for content */
+             /* border-bottom: 1px dashed var(--border-color); */ /* Optional separator inside */
+        }
+        .ai-message .result-section:last-child {
+            /* border-bottom: none; */
+        }
+         .ai-message .result-section h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: var(--accent-color); /* Use accent for headings */
+            font-size: 1em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ai-message .result-section h3::before { /* Icons for sections */
+             font-size: 0.9em;
+             opacity: 0.7;
+        }
+        #result-verdict h3::before { content: '⚖️'; }
+        #result-text-source h3::before { content: '📖'; }
+        #result-explanation h3::before { content: '💬'; }
+        #result-related h3::before { content: '🔗'; }
+
+        .ai-message .result-section p {
+             margin: 0;
+             padding-left: 24px; /* Indent content under icon */
+             white-space: pre-wrap; /* Preserve line breaks from API */
+        }
+        .ai-message .result-section p:empty::after {
+            content: "N/A"; /* Show N/A if section is empty */
+            color: var(--text-color-secondary);
+            font-style: italic;
+        }
+
+        /* Loading/Status Messages in Chat */
+        .status-message {
+            font-style: italic;
+            color: var(--text-color-secondary);
+            align-self: center;
+            padding: 5px 10px;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        .error-message-chat {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--error-color);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            align-self: stretch; /* Take full width */
+            text-align: left;
+            max-width: 100%;
+            border-radius: var(--border-radius);
+            padding: 12px 18px; /* Match message padding */
+        }
+        .error-message-chat strong { /* Make links stand out */
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+
+        /* Chat Input Area */
+        #chatInputArea {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--panel-bg-color); /* Match panel background */
+        }
+        #chatInput {
+            flex-grow: 1;
+            padding: 12px 15px;
+            font-size: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius) 0 0 var(--border-radius);
+            background-color: var(--input-bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            margin-right: -1px;
+            resize: none; /* Prevent manual resize */
+             height: 48px; /* Default height */
+             line-height: 1.5;
+        }
+        #chatInput:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.3);
+            z-index: 2;
+            position: relative;
+        }
+        #sendChatButton {
+            padding: 12px 18px;
+            font-size: 18px; /* Larger icon */
+            font-weight: 600;
+            background-color: var(--button-bg);
+            color: white;
+            border: 1px solid var(--button-bg);
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #sendChatButton:hover {
+            background-color: var(--button-hover-bg);
+            border-color: var(--button-hover-bg);
+        }
+        #sendChatButton:disabled {
+            background-color: var(--button-secondary-bg);
+            border-color: var(--border-color);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+         /* Visual Indicator Styling (applied to .ai-message border) */
+         .ai-message.result-authentic { border-left-color: var(--accent-color-alt); } /* Green */
+         .ai-message.result-disputed { border-left-color: var(--warning-color); } /* Yellow */
+         .ai-message.result-fabricated { border-left-color: var(--error-color); } /* Red */
+         .ai-message.result-unknown { border-left-color: var(--text-color-secondary); } /* Grey */
+
+    </style>
+</head>
+<body>
+
+    <!-- Settings Icon -->
+    <div id="settingsIcon" title="API Key Settings">⚙️</div>
+
+    <h1>Islamic Content Authenticity Chat</h1>
+
+    <!-- API Key Settings Panel (Initially Hidden) -->
+    <div id="settingsPanel">
+         <h2>API Key Settings</h2>
+         <div id="apiKeySection">
+             <label for="apiKeyInput">Google Gemini API Key:</label>
+             <div>
+                 <input type="password" id="apiKeyInput" placeholder="Enter your API Key">
+                 <button id="saveApiKeyButton" onclick="saveApiKey()">Save Key</button>
+             </div>
+             <div id="apiKeyStatus">API key status will appear here.</div>
+             <p class="api-key-note">
+                 Enter your Google Gemini API key here. It will be stored securely in your browser's local storage for this site only.
+                 <br><strong>Security Note:</strong> While stored locally, avoid using this on public or shared computers. Get a key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio</a>.
+             </p>
+         </div>
+    </div>
+
+    <!-- Initial Search Section -->
+    <div id="searchSection">
+        <input type="text" id="searchInput" placeholder="Start a new chat: Enter question, Hadith, URL...">
+        <button id="checkButton" onclick="startNewChat()">Check</button>
+        <button id="clearButton" onclick="clearAll()">Clear All</button>
+    </div>
+
+    <!-- Chat Area -->
+    <div id="chatArea">
+        <div id="chatHistory">
+            <!-- Messages will be appended here -->
+            <div id="initialChatMessage" class="status-message">
+                Loading status...
+            </div>
+        </div>
+        <div id="chatInputArea">
+            <textarea id="chatInput" placeholder="Ask a follow-up question..." rows="1" oninput="autoGrow(this)" onkeypress="handleChatInputKeypress(event)" disabled></textarea> <!-- Start disabled -->
+            <button id="sendChatButton" onclick="sendChatMessage()" title="Send Message" disabled>➤</button> <!-- Start disabled -->
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const settingsIcon = document.getElementById('settingsIcon');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const apiKeyStatus = document.getElementById('apiKeyStatus');
+        const searchInput = document.getElementById('searchInput'); // Initial query
+        const checkButton = document.getElementById('checkButton');
+        const clearButton = document.getElementById('clearButton');
+        const chatHistoryDiv = document.getElementById('chatHistory');
+        const chatInput = document.getElementById('chatInput'); // Follow-up input
+        const sendChatButton = document.getElementById('sendChatButton');
+        const initialChatMessage = document.getElementById('initialChatMessage');
+
+        // --- Constants ---
+        const API_KEY_STORAGE_ITEM = 'geminiApiKey_islamicChecker_v4'; // Updated key name
+        const GEMINI_MODEL = 'gemini-1.5-flash-latest';
+
+        // --- State ---
+        let currentApiKey = null;
+        let conversationHistory = []; // Stores { role: 'user'/'model', parts: [{ text: '...' }] }
+        let isLoading = false; // Prevent multiple simultaneous requests
+        let apiKeyValid = null; // Track validity: null (unchecked), true (valid), false (invalid)
+
+        // --- Functions ---
+
+        function autoGrow(element) {
+            element.style.height = "5px"; // Temporarily shrink to get correct scrollHeight
+            element.style.height = (element.scrollHeight) + "px";
+        }
+
+        function toggleSettingsPanel() {
+            settingsPanel.style.display = (settingsPanel.style.display === 'block') ? 'none' : 'block';
+            if (settingsPanel.style.display === 'block') {
+                updateApiKeyStatusDisplay(); // Refresh status when opening
+            }
+        }
+
+        // Update status messages in settings panel and chat based on current key state
+        function updateApiKeyStatusDisplay() {
+            const hasApiKey = Boolean(currentApiKey);
+
+            // Settings Panel Status
+            if (settingsPanel.style.display === 'block') {
+                if (!hasApiKey) {
+                    apiKeyStatus.textContent = 'No API Key found. Please enter and save one.';
+                    apiKeyStatus.style.color = 'var(--warning-color)';
+                } else if (apiKeyValid === false) { // Explicitly check for known invalid state
+                     apiKeyStatus.textContent = 'Previously entered API Key was invalid. Please enter a valid key.';
+                     apiKeyStatus.style.color = 'var(--error-color)';
+                 } else { // Assumed valid if present and not marked invalid
+                    apiKeyStatus.textContent = 'API Key loaded from local storage.';
+                    apiKeyStatus.style.color = 'var(--text-color-secondary)';
+                }
+            }
+
+             // Initial Chat Message & Input Enable/Disable
+            if (initialChatMessage) {
+                 if (!hasApiKey) {
+                    initialChatMessage.textContent = 'Welcome! Please set your API Key via the settings icon (⚙️) top-right to enable chat.';
+                    initialChatMessage.style.display = 'block';
+                     chatInput.disabled = true;
+                     sendChatButton.disabled = true;
+                     checkButton.disabled = true; // Disable initial check too if no key
+                 } else if (apiKeyValid === false) {
+                     initialChatMessage.textContent = 'The stored API Key is invalid. Please update it in Settings (⚙️).';
+                     initialChatMessage.style.display = 'block';
+                     chatInput.disabled = true;
+                     sendChatButton.disabled = true;
+                     checkButton.disabled = true;
+                 } else {
+                     initialChatMessage.textContent = 'API Key loaded. Ask a question above to start a chat.';
+                     // Only show the initial message if the chat history is empty
+                     initialChatMessage.style.display = (conversationHistory.length === 0) ? 'block' : 'none';
+                     chatInput.disabled = false;
+                     sendChatButton.disabled = isLoading; // Only disable if loading
+                     checkButton.disabled = isLoading;  // Only disable if loading
+                 }
+            } else { // Fallback if initial message element isn't found (shouldn't happen)
+                 chatInput.disabled = !hasApiKey || apiKeyValid === false;
+                 sendChatButton.disabled = !hasApiKey || apiKeyValid === false || isLoading;
+                 checkButton.disabled = !hasApiKey || apiKeyValid === false || isLoading;
+            }
+
+            console.log(hasApiKey ? `API Key loaded. Valid: ${apiKeyValid}` : "No API Key found.");
+        }
+
+
+        function loadApiKey() {
+            const storedKey = localStorage.getItem(API_KEY_STORAGE_ITEM);
+            currentApiKey = storedKey;
+             // Reset validity check on load - assume valid until an error occurs
+             // We could store validity, but that adds complexity. Simple approach first.
+             apiKeyValid = storedKey ? true : null; // Assume true if key exists, null otherwise
+            updateApiKeyStatusDisplay(); // Update UI based on loaded key
+        }
+
+        function saveApiKey() {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                localStorage.setItem(API_KEY_STORAGE_ITEM, key);
+                currentApiKey = key;
+                apiKeyValid = true; // Assume valid upon saving a new key
+                apiKeyInput.value = '';
+                console.log("API Key saved.");
+                updateApiKeyStatusDisplay(); // Update all status messages
+                // Optional: auto-close panel
+                // setTimeout(() => { settingsPanel.style.display = 'none'; }, 1500);
+            } else {
+                // Don't just update status text, maybe show error directly
+                 apiKeyStatus.textContent = 'Cannot save an empty API Key.';
+                 apiKeyStatus.style.color = 'var(--error-color)';
+            }
+        }
+
+        function clearAll() {
+            searchInput.value = '';
+            chatInput.value = '';
+            chatHistoryDiv.innerHTML = ''; // Clear visual history
+            conversationHistory = []; // Clear internal history
+            isLoading = false; // Reset loading state
+            setLoading(false); // Ensure buttons are re-enabled based on API key
+            // Re-add the initial message placeholder if needed
+             if (!document.getElementById('initialChatMessage')) {
+                 const initialMsgDiv = document.createElement('div');
+                 initialMsgDiv.id = 'initialChatMessage';
+                 initialMsgDiv.className = 'status-message';
+                 chatHistoryDiv.appendChild(initialMsgDiv);
+             }
+             loadApiKey(); // Reset messages and button states based on API key
+             chatInput.style.height = '48px'; // Reset textarea height
+            searchInput.focus();
+        }
+
+        function handleChatInputKeypress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault(); // Prevent default newline on Enter
+                sendChatMessage();
+            }
+        }
+
+        function scrollToBottom() {
+            // Add a small delay to ensure the element is rendered before scrolling
+            setTimeout(() => {
+                chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
+            }, 50);
+        }
+
+        function setLoading(loading) {
+             isLoading = loading;
+            // Enable/disable based on loading AND API key status
+            updateApiKeyStatusDisplay();
+        }
+
+        function displayMessage(role, content, resultClass = '') {
+             const messageDiv = document.createElement('div');
+             // messageDiv.classList.add('message'); // Base class removed, applied specifically below
+
+             if (role === 'user') {
+                 messageDiv.classList.add('message', 'user-message');
+                 messageDiv.textContent = content;
+             } else if (role === 'model') {
+                 messageDiv.classList.add('message', 'ai-message');
+                 if (resultClass) {
+                    messageDiv.classList.add(resultClass); // Add border color class
+                 }
+                 // If content is structured (object from parseGeminiResponse)
+                 if (typeof content === 'object' && content !== null) {
+                    messageDiv.innerHTML = formatAiResponseHtml(content);
+                 } else { // If plain text (e.g., internal error before formatting)
+                    messageDiv.textContent = content;
+                 }
+             } else if (role === 'status') {
+                 messageDiv.classList.add('status-message');
+                 messageDiv.textContent = content;
+             } else if (role === 'error') {
+                // Use specific class for chat errors, style it like a message but with error colors
+                messageDiv.classList.add('error-message-chat');
+                messageDiv.innerHTML = content; // Allow basic HTML in errors (like the link to settings)
+             }
+
+             chatHistoryDiv.appendChild(messageDiv);
+             scrollToBottom();
+             return messageDiv; // Return the created element
+        }
+
+         // Format the structured AI response into HTML for chat display
+         function formatAiResponseHtml(sections) {
+             // Helper to generate each section HTML
+             const createSectionHtml = (id, title, content) => {
+                 // Only create the section if content exists or if it's the verdict section (always show verdict)
+                 // Removed this condition: always show all sections, display N/A if empty via CSS
+                 // if (content || id === 'result-verdict') {
+                     return `
+                         <div class="result-section" id="${id}">
+                             <h3>${title}</h3>
+                             <p>${escapeHtml(content || '')}</p> <!-- Display empty string if null/undefined -->
+                         </div>`;
+                 // }
+                 // return ''; // Return empty string if no content and not verdict
+             };
+
+             return `
+                 ${createSectionHtml('result-verdict', 'Authenticity / Verdict', sections.verdict)}
+                 ${createSectionHtml('result-text-source', 'Text / Source', sections.textSource)}
+                 ${createSectionHtml('result-explanation', 'Scholarly Opinions / Explanation', sections.explanation)}
+                 ${createSectionHtml('result-related', 'Related Info / Context', sections.related)}
+             `;
+         }
+
+         // Basic HTML escaping
+         function escapeHtml(unsafe) {
+             if (typeof unsafe !== 'string') return ''; // Handle non-string inputs
+             return unsafe
+                  .replace(/&/g, "&amp;")
+                  .replace(/</g, "&lt;")
+                  .replace(/>/g, "&gt;")
+                  .replace(/"/g, "&quot;")
+                  .replace(/'/g, "&#039;");
+         }
+
+
+        // Function to parse the API response based on headings (similar to previous version)
+        function parseGeminiResponse(text) {
+            const sections = { verdict: '', textSource: '', explanation: '', related: '' };
+            const lines = text.split('\n');
+            let currentSectionKey = null;
+            let contentBuffer = '';
+
+            const headingMap = {
+                "**Authenticity / Verdict:**": "verdict",
+                "**Text / Source:**": "textSource",
+                "**Scholarly Opinions / Explanation:**": "explanation",
+                "**Related Info / Context:**": "related"
+            };
+
+             // Trim BOM if present (often at the start of UTF-8 files/streams)
+             if (lines.length > 0 && lines[0].charCodeAt(0) === 0xFEFF) {
+                 lines[0] = lines[0].substring(1);
+             }
+
+
+            for (const line of lines) {
+                const trimmedLine = line.trim();
+                let matchedHeading = false;
+
+                for (const heading in headingMap) {
+                    // Be slightly more flexible with heading matching (optional spaces)
+                    if (trimmedLine.startsWith(heading)) {
+                        // Save previous section's content
+                        if (currentSectionKey && contentBuffer) {
+                            sections[currentSectionKey] = contentBuffer.trim();
+                        }
+                        // Start new section
+                        currentSectionKey = headingMap[heading];
+                        contentBuffer = trimmedLine.substring(heading.length).trim(); // Text after heading
+                         // Add newline only if there was text after the heading
+                         if (contentBuffer) contentBuffer += '\n';
+                        matchedHeading = true;
+                        break;
+                    }
+                }
+
+                // If it's not a heading line, append to the current buffer
+                if (!matchedHeading && currentSectionKey) {
+                    // Preserve leading/trailing whitespace within the line itself
+                    contentBuffer += line + '\n';
+                }
+            }
+
+            // Save the last section's content
+            if (currentSectionKey && contentBuffer) {
+                sections[currentSectionKey] = contentBuffer.trim();
+            }
+
+            // Fallback if parsing failed (no headings found)
+             if (Object.values(sections).every(s => !s)) { // Check if all values are empty/falsy
+                console.warn("Could not parse response using headings. Using raw text.");
+                 sections.explanation = text; // Put everything in explanation
+                 sections.verdict = "Response format unclear.";
+             }
+
+            // Ensure all keys exist, even if empty
+            sections.verdict = sections.verdict || '';
+            sections.textSource = sections.textSource || '';
+            sections.explanation = sections.explanation || '';
+            sections.related = sections.related || '';
+
+
+            return sections;
+        }
+
+        // Function to determine result class based on verdict text (similar to previous version)
+        function getResultClass(verdictText) {
+            if (!verdictText || typeof verdictText !== 'string') return 'result-unknown';
+             const lowerVerdict = verdictText.toLowerCase();
+             // Prioritize negative terms
+             if (lowerVerdict.includes("fabricated") || lowerVerdict.includes("mawdu") || lowerVerdict.includes("mawḍūʿ") || lowerVerdict.includes("haram") || lowerVerdict.includes("ḥarām") || lowerVerdict.includes("forbidden") || lowerVerdict.includes("false") || lowerVerdict.includes("misinformation") || lowerVerdict.includes("not found") || lowerVerdict.includes("cannot verify") || lowerVerdict.includes("invalid")) {
+                 return 'result-fabricated';
+             } else if (lowerVerdict.includes("weak") || lowerVerdict.includes("da'if") || lowerVerdict.includes("ḍaʿīf") || lowerVerdict.includes("disputed") || lowerVerdict.includes("makruh") || lowerVerdict.includes("makrūh") || lowerVerdict.includes("unclear") || lowerVerdict.includes("conflicting") || lowerVerdict.includes("lacks evidence") || lowerVerdict.includes("differing opinions")) {
+                 return 'result-disputed';
+             } else if (lowerVerdict.includes("authentic") || lowerVerdict.includes("sahih") || lowerVerdict.includes("ṣaḥīḥ") || lowerVerdict.includes("hasan") || lowerVerdict.includes("ḥasan") || lowerVerdict.includes("halal") || lowerVerdict.includes("ḥalāl") || lowerVerdict.includes("permissible") || lowerVerdict.includes("verified") || lowerVerdict.includes("likely true") || lowerVerdict.includes("wajib") || lowerVerdict.includes("wājib") || lowerVerdict.includes("mustahab") || lowerVerdict.includes("mustaḥabb") || lowerVerdict.includes("mubah") || lowerVerdict.includes("mubāḥ")) {
+                 return 'result-authentic';
+             } else {
+                 return 'result-unknown'; // Default if keywords not found
+             }
+        }
+
+        async function sendMessageToApi(userQuery) {
+            if (isLoading) {
+                console.warn("Request already in progress.");
+                return;
+            }
+            if (!currentApiKey) {
+                // This case should ideally be prevented by disabled buttons, but double-check
+                displayMessage('error', `API Key not set. Please configure it in Settings (⚙️).`);
+                return;
+            }
+
+            setLoading(true);
+            if (initialChatMessage) initialChatMessage.style.display = 'none'; // Hide initial message
+
+            // Add user message to internal history
+            conversationHistory.push({ role: 'user', parts: [{ text: userQuery }] });
+            // Display user message visually
+            displayMessage('user', userQuery);
+
+            // Add a temporary loading message for the AI response
+             const loadingMsgDiv = displayMessage('status', 'Checking...');
+
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${currentApiKey}`;
+
+            // --- Updated Prompt Engineering (with Modern Scholars Request) ---
+            const systemInstruction = `
+You are an AI assistant specialized in checking the authenticity and context of Islamic content (Hadith, Quran references, rulings, and general claims). Your tone and style must resemble Sheikh Assim Al-Hakeem — clear, confident, evidence-based, and respectful. Avoid vague or speculative language.
+
+Always search **all six major books of Hadith** (Sahih Bukhari, Sahih Muslim, Sunan Abu Dawood, Jami' al-Tirmidhi, Sunan an-Nasa’i, Ibn Majah), as well as **Musnad Ahmad**, **Tafsir Ibn Kathir**, **Al-Muwatta**, and **reliable Islamic websites** like IslamQA, IslamWeb, and Fatwa.islamonline.net.
+
+When answering, follow this structure and headings exactly:
+
+---
+
+**Authenticity / Verdict:**
+* Hadith: Sahih, Hasan, Da’if, Mawdu’, Disputed, Not Found.
+* Rulings: Wajib, Mustahab, Mubah, Makruh, Haram, Disputed.
+* Claims: Verified, Likely True, False, Misleading, Lacks Evidence, Cannot Verify.
+* Include confidence level: High / Medium / Low.
+
+---
+
+**Text / Source:**
+* For Hadith/Quran:
+  - Arabic text
+  - Transliteration
+  - English translation
+* Cite exact source:
+  - Hadith: Book + number (e.g., Sahih Muslim #1377)
+  - Quran: Surah + verse (e.g., Surah Al-Qadr 97:3)
+  - Fatwa: Scholar + fatwa site/book reference (e.g., IslamQA #128536 by Sheikh Al-Munajjid)
+* If weak or fabricated, still mention where it’s found and how it’s graded (e.g., "in Musnad Ahmad, classified Da’if by Al-Albani").
+
+---
+
+**Scholarly Opinions / Explanation:**
+* Include views of Sheikh Ibn Baz, Sheikh Ibn Uthaymeen, Sheikh Al-Albani, and Sheikh Assim Al-Hakeem if available.
+* Explain reasoning or disagreement (Ikhtilaf) among scholars if applicable.
+* Be concise, fact-based, and avoid speculation or modernist reinterpretation.
+
+---
+
+**Related Info / Context:**
+* Add short, helpful notes:
+  - Related Hadith or Quran verses
+  - Common misconceptions
+  - Cultural issues vs Shari’ah rulings
+* If none: write “N/A”
+
+---
+
+**Instructions:**
+Every claim must be backed by a reliable Islamic source (Hadith book, Quran, fatwa, or scholar). Do NOT generalize. Do NOT omit known Hadith. Write clearly, like a digital Sheikh Assim Al-Hakeem. Always use this exact format and headings.
+`;
+
+            // Prepare the request body with history + system instruction
+            const requestBody = {
+                contents: [...conversationHistory], // Send conversation history
+                 // systemInstruction might not be fully supported by all versions/models,
+                 // but include it as per documentation best practice.
+                 systemInstruction: { parts: [{ text: systemInstruction }] },
+                generationConfig: {
+                    // temperature: 0.5,
+                    // maxOutputTokens: 3000 // Increased slightly
+                 },
+                 safetySettings: [ // Standard safety settings
+                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }
+                 ]
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody),
+                });
+
+                 // Remove the loading message before displaying result or error
+                 if (loadingMsgDiv) loadingMsgDiv.remove();
+
+                let aiResponseText = "Error: Could not retrieve response.";
+                let parsedSections = null;
+                 let resultClass = 'result-unknown';
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: { message: 'Failed to parse error response.' } })); // Provide default error object
+                    console.error("API Error Response:", response.status, response.statusText, errorData);
+                    const errorMsg = errorData?.error?.message || 'Unknown API error';
+
+                    // Check specifically for invalid API key error from Google API
+                    if (response.status === 400 && errorMsg.includes('API key not valid')) {
+                        apiKeyValid = false; // Mark key as invalid
+                        aiResponseText = `<strong>API Key Error:</strong> The provided API key is not valid. Please check the key in <strong>Settings (⚙️)</strong> and save a correct one.`;
+                        updateApiKeyStatusDisplay(); // Update UI to reflect invalid key
+                    } else {
+                        aiResponseText = `<strong>API Error ${response.status}:</strong> ${escapeHtml(response.statusText)}.<br>Details: ${escapeHtml(errorMsg)}`;
+                    }
+                     displayMessage('error', aiResponseText); // Display formatted error in chat
+                     // Don't add API errors to the conversation history
+                } else {
+                    const data = await response.json();
+                    console.log("API Success Response:", data);
+
+                     // Check for safety block first
+                    if (data.promptFeedback?.blockReason) {
+                        aiResponseText = `Content generation blocked due to safety settings: ${data.promptFeedback.blockReason}`;
+                         if(data.promptFeedback.safetyRatings) {
+                             // aiResponseText += `\nDetails: ${JSON.stringify(data.promptFeedback.safetyRatings)}`; // Maybe too verbose
+                         }
+                         console.warn("Content blocked:", data.promptFeedback);
+                         displayMessage('error', `<strong>Content Blocked:</strong> ${escapeHtml(aiResponseText)}`);
+                         // Do not add blocked responses to history
+                    }
+                     // Check for candidate content
+                     else if (data.candidates && data.candidates.length > 0 && data.candidates[0].content?.parts?.[0]?.text) {
+                        // If we got a valid response, assume the key used was valid
+                         apiKeyValid = true;
+                         updateApiKeyStatusDisplay(); // Reflect valid key status (enables inputs if they were disabled)
+
+                        aiResponseText = data.candidates[0].content.parts[0].text.trim();
+                        // Add AI response to internal history
+                        conversationHistory.push({ role: 'model', parts: [{ text: aiResponseText }] });
+                        // Parse the response for structured display
+                         parsedSections = parseGeminiResponse(aiResponseText);
+                         resultClass = getResultClass(parsedSections.verdict);
+                         // Display structured AI response visually
+                         displayMessage('model', parsedSections, resultClass);
+
+                    } else {
+                         // Handle cases where response is ok, but no content or unexpected structure
+                         console.warn("Unexpected API response structure:", data);
+                         aiResponseText = "Received an unexpected or empty response format from the API.";
+                         displayMessage('error', `<strong>Response Error:</strong> ${escapeHtml(aiResponseText)}`);
+                         // Do not add empty/malformed responses to history
+                    }
+                }
+
+            } catch (error) {
+                 if (loadingMsgDiv) loadingMsgDiv.remove(); // Ensure loading removed on catch
+                console.error("Fetch/Processing Error:", error);
+                // Display network or other JS errors
+                displayMessage('error', `<strong>Application Error:</strong> An error occurred while processing the request: ${escapeHtml(error.message)}`);
+            } finally {
+                setLoading(false); // Re-enable buttons according to API key status
+                scrollToBottom(); // Ensure view is scrolled down after response/error
+            }
+        }
+
+        // --- Event Handlers ---
+
+        // Initial search input starts a *new* chat
+        function startNewChat() {
+            const query = searchInput.value.trim();
+            if (!query || isLoading || !currentApiKey || apiKeyValid === false) return; // Prevent if loading, no key, or invalid key
+
+            // Clear existing chat before starting new one
+            chatHistoryDiv.innerHTML = '';
+            conversationHistory = [];
+            if (initialChatMessage) initialChatMessage.style.display = 'none';
+
+            sendMessageToApi(query);
+            // searchInput.value = ''; // Optional: Clear initial input after starting
+        }
+
+        // Chat input sends a follow-up message
+        function sendChatMessage() {
+            const query = chatInput.value.trim();
+             if (!query || isLoading || !currentApiKey || apiKeyValid === false) return; // Prevent if loading, no key, or invalid key
+
+            sendMessageToApi(query);
+            chatInput.value = ''; // Clear chat input after sending
+             chatInput.style.height = '48px'; // Reset textarea height
+        }
+
+
+        // --- Event Listeners ---
+        settingsIcon.addEventListener('click', toggleSettingsPanel);
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                startNewChat();
+            }
+        });
+        // `handleChatInputKeypress` is attached directly in the HTML
+
+
+        // --- Initialization ---
+        window.onload = () => {
+            loadApiKey(); // Load key and set initial message/button states
+            chatInput.style.height = '48px'; // Ensure correct initial height
+        };
+
+    </script>
+
+</body>
+</html>
